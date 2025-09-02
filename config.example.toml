@@ -1,0 +1,114 @@
+# solana-nova-sniper — example configuration
+#
+# Copy to `config.toml` and edit. Never commit wallet keypairs.
+
+[runtime]
+# Log level: trace | debug | info | warn | error
+log_level = "info"
+# Emit logs as JSON (recommended for production)
+json_logs = true
+# Max concurrent snipe tasks in flight
+max_concurrent_snipes = 4
+
+[rpc]
+# Primary RPC for account reads, simulation, fallback sends
+http_url = "https://api.mainnet-beta.solana.com"
+# Geyser gRPC endpoint (Yellowstone / Helius / Triton)
+geyser_url = "https://your-geyser-endpoint.example.com"
+# Optional x-token auth for Geyser
+geyser_x_token = ""
+# Commitment: processed | confirmed | finalized
+commitment = "processed"
+
+[jito]
+# Jito block engine REST endpoint
+block_engine_url = "https://mainnet.block-engine.jito.wtf"
+# Tip in SOL per bundle
+tip_sol = 0.001
+# Known Jito tip accounts (pick one at random per bundle)
+tip_accounts = [
+    "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
+    "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
+    "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
+    "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
+    "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
+    "ADuUkR4vqLUMWXxW9gh6D6L8pivKeVBBjNhVhx1rQhQM",
+    "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
+    "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT",
+]
+# Retry attempts if a bundle is dropped
+max_bundle_retries = 3
+
+[wallets]
+# Path-based keypair files (Solana CLI format: JSON array of 64 bytes).
+# Bot rotates through wallets round-robin for parallel snipes.
+keypair_paths = [
+    "./wallets/wallet-1.json",
+    # "./wallets/wallet-2.json",
+]
+# Rotation strategy: "round_robin" | "random" | "first_available"
+rotation = "round_robin"
+
+[sizing]
+# SOL to spend per buy
+buy_sol = 0.05
+# Max slippage tolerated (basis points, 100 = 1%)
+max_slippage_bps = 1500
+# Compute unit price in microlamports (priority fee)
+compute_unit_price = 500_000
+# Compute unit limit
+compute_unit_limit = 400_000
+
+[targets.pumpfun]
+enabled = true
+program_id = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+# Discriminator for `create` instruction (Anchor-style first 8 bytes of hash)
+# Update if Pump.fun ships a new IDL.
+create_discriminator = "181ec828051c0777"
+
+[targets.raydium_launchlab]
+enabled = true
+# Raydium LaunchLab program id
+program_id = "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+# Discriminator for pool initialization
+initialize_discriminator = "afaf6d1f0d989bed"
+
+[filters]
+# Minimum initial liquidity in SOL (set to 0 to disable)
+min_initial_liquidity_sol = 2.0
+# Maximum supply (in whole tokens); 0 = disabled
+max_supply = 1_000_000_000
+# Require mint authority to be null/renounced
+require_mint_authority_renounced = true
+# Require freeze authority to be null
+require_freeze_authority_null = true
+# Minimum % of LP tokens burned or time-locked
+min_lp_locked_pct = 90.0
+# Metadata keyword filters (regex, case-insensitive). Empty = allow all.
+name_allow_regex = []
+name_deny_regex = ["(?i)test", "(?i)scam"]
+symbol_allow_regex = []
+# Social links requirement
+require_socials = false
+# Dev wallet lists — base58 pubkeys
+dev_allowlist = []
+dev_blocklist = []
+
+[strategy]
+# Take-profit ladder: list of {multiplier, sell_pct}.
+# Example below: sell 30% at 2x, 30% at 5x, 40% at 10x.
+take_profit_ladder = [
+    { multiplier = 2.0, sell_pct = 30.0 },
+    { multiplier = 5.0, sell_pct = 30.0 },
+    { multiplier = 10.0, sell_pct = 40.0 },
+]
+# Stop loss at this fraction of entry (0.5 = -50%)
+stop_loss_multiplier = 0.5
+# Trailing stop: drop this fraction from peak before exiting remaining position
+trailing_stop_drawdown = 0.35
+# Trailing stop only activates once price has reached this multiplier
+trailing_stop_activation = 2.0
+# Max hold duration in seconds (hard exit)
+max_hold_seconds = 3600
+# Poll interval for price checks (ms)
+price_poll_interval_ms = 500
